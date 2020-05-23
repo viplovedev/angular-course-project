@@ -20,6 +20,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthComponent } from './auth/auth.component';
 import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinner.component';
 import { AuthInterceptorService } from './auth/auth-interceptor.service';
+import { AuthService } from './auth/auth.service';
 
 @NgModule({
   declarations: [
@@ -47,6 +48,7 @@ import { AuthInterceptorService } from './auth/auth-interceptor.service';
   providers: [
     RecipeService,
     ShoppingListService,
+    AuthService,
     {
       provide:HTTP_INTERCEPTORS,
       useClass:AuthInterceptorService,

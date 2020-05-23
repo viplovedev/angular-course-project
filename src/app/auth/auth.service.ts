@@ -19,7 +19,8 @@ export interface AuthResponse{
 })
 export class AuthService {
   user = new BehaviorSubject<User>(null);
-  logOutTimer: NodeJS.Timer;
+  logOutTimer: NodeJS.Timer = null;
+  testString:string = null;
 
   constructor(
     private http:HttpClient,
@@ -91,6 +92,8 @@ export class AuthService {
       userData._tokenExpirationDate
     );
     this.user.next(loadedUser);
+    console.log("Expiration Date after reload: ");
+    console.log(userData._tokenExpirationDate);
   }
 
   private handleAuthentication(
@@ -112,8 +115,10 @@ export class AuthService {
       this.user.next(user);
       localStorage.setItem('userData',JSON.stringify(user));
       const dummyExpirationDate = new Date();
-      dummyExpirationDate.setSeconds(new Date().getSeconds()+5)
-      this.autoLogout(dummyExpirationDate);
+      dummyExpirationDate.setSeconds(new Date().getSeconds()+10)
+      this.autoLogout(expirationDate);
+      console.log("Expiration Date while setting auto logout: ");
+      console.log(expirationDate);
     }
   }
 

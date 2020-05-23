@@ -28,8 +28,7 @@ export class AuthComponent implements OnInit {
   }
 
   onSubmit(form: NgForm) {
-    console.log(form.value);
-
+    
     this.isLoading = true;
     if (form.valid) {
       if (this.isLoginMode) {
@@ -38,6 +37,8 @@ export class AuthComponent implements OnInit {
         this.authObs = this.authService.signup(form.value.email, form.value.password);
       }
     }
+    console.log("Timer being set parallelly ...");
+    console.log(this.authService.testString);
     this.authObs.subscribe(
       response => {
         this.isLoading = false;
