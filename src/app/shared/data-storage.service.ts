@@ -23,17 +23,8 @@ export class DataStorageService {
     }
 
     fetchRecipes() {
-        return this.authService.user.
-        pipe(
-            take(1),
-            exhaustMap(user => {
-                return this.http.get<Recipe[]>(
-                    'https://ng-course-recipe-book-a3a7b.firebaseio.com/recipes.json',
-                    {
-                        params: {'auth':user.token}
-                    }
-                )
-            })
+        return this.http.get<Recipe[]>(
+            'https://ng-course-recipe-book-a3a7b.firebaseio.com/recipes.json'
         )
         .pipe(
             map(recipes => {

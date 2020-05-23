@@ -1,8 +1,9 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, tap } from 'rxjs/operators';
-import { throwError, Subject } from 'rxjs';
+import { throwError, Subject, BehaviorSubject } from 'rxjs';
 import { User } from '../user/user.model';
+import { Router } from '@angular/router';
 
 export interface AuthResponse{
   idToken:string;
@@ -17,9 +18,13 @@ export interface AuthResponse{
   providedIn: 'root'
 })
 export class AuthService {
-  user = new Subject<User>();
+  user = new BehaviorSubject<User>(null);
+  logOutTimer: NodeJS.Timer;
 
-  constructor(private http:HttpClient) { }
+  constructor(
+    private http:HttpClient,
+    private router:Router
+    ) { }
 
   signup(email:string,password:string){
     return this.http.post<AuthResponse>(
@@ -63,6 +68,31 @@ export class AuthService {
     )
   }
 
+  autoLogin(){
+    const userData:{
+      email: string,
+      id: string,
+      _token:string,
+      _tokenExpirationDate: Date
+    } = JSON.parse(localStorage.getItem('userData'))
+   
+    if(!userData){
+      return;
+    }
+
+    if(!userData._token){
+      return;
+    }
+    
+    const loadedUser = new User(
+      userData.email, 
+      userData.id, 
+      userData._token, 
+      userData._tokenExpirationDate
+    );
+    this.user.next(loadedUser);
+  }
+
   private handleAuthentication(
     email:string,
     localId:string,
@@ -80,6 +110,10 @@ export class AuthService {
         expirationDate
       );
       this.user.next(user);
+      localStorage.setItem('userData',JSON.stringify(user));
+      const dummyExpirationDate = new Date();
+      dummyExpirationDate.setSeconds(new Date().getSeconds()+5)
+      this.autoLogout(dummyExpirationDate);
     }
   }
 
@@ -103,5 +137,22 @@ export class AuthService {
       }
     }
     return throwError(errorMessage);
+  }
+
+  logout(){
+    this.user.next(null);
+    this.router.navigate(['/auth']);
+    localStorage.removeItem('userData');
+    clearTimeout(this.logOutTimer);
+    this.logOutTimer = null;
+  }
+
+  autoLogout(logoutDate:Date){
+    /**
+     * calculate the remaining time from the @logoutDate
+     * set timer to the remaining time and logout
+     */
+    const millisecondsRemaining = logoutDate.getTime() - new Date().getTime();
+    this.logOutTimer = setTimeout(()=>{this.logout()}, millisecondsRemaining);
   }
 }
